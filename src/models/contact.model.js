@@ -7,7 +7,6 @@ const contactSchema = new mongoose.Schema({
     },
     email: {
         type: String,
-        required: true,
         trim: true,
         lowercase: true,
         match: [/.+@.+\..+/, "Please enter a valid email address"]

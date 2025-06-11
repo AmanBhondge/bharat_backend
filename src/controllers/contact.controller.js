@@ -4,10 +4,10 @@ export const createContact = async (req, res) => {
     try {
         const { name, email, phone, message, reason } = req.body;
 
-        if (!name || !email || !phone) {
+        if (!name || !phone) {
             return res.status(400).json({
                 success: false,
-                message: "Name, email, and phone are required fields",
+                message: "Name and phone are required fields",
             });
         }
 
