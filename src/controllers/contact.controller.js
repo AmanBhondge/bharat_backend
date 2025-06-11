@@ -7,7 +7,14 @@ export const createContact = async (req, res) => {
         if (!name || !email || !phone) {
             return res.status(400).json({
                 success: false,
-                message: "Name, email, and phone are required fields"
+                message: "Name, email, and phone are required fields",
+            });
+        }
+
+        if (reason && !Array.isArray(reason)) {
+            return res.status(400).json({
+                success: false,
+                message: "Reason must be an array of strings",
             });
         }
 
@@ -16,7 +23,7 @@ export const createContact = async (req, res) => {
             email,
             phone,
             message,
-            reason
+            reason: reason || [], 
         });
 
         const savedContact = await newContact.save();
@@ -24,30 +31,30 @@ export const createContact = async (req, res) => {
         res.status(201).json({
             success: true,
             message: "Contact created successfully",
-            data: savedContact
+            data: savedContact,
         });
-
     } catch (error) {
-        if (error.name === 'ValidationError') {
-            const errors = Object.values(error.errors).map(err => err.message);
+        
+        if (error.name === "ValidationError") {
+            const errors = Object.values(error.errors).map((err) => err.message);
             return res.status(400).json({
                 success: false,
                 message: "Validation error",
-                errors: errors
+                errors: errors,
             });
         }
 
         if (error.code === 11000) {
             return res.status(400).json({
                 success: false,
-                message: "Contact with this email already exists"
+                message: "Contact with this email already exists",
             });
         }
 
         console.error("Error creating contact:", error);
         res.status(500).json({
             success: false,
-            message: "Internal server error"
+            message: "Internal server error",
         });
     }
 };
