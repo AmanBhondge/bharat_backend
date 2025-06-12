@@ -1,13 +1,15 @@
 import Contact from "../models/contact.model.js"; 
+import { sendMail } from "../utils/feedback.email.js";
+import {RECEIVER_EMAIL} from "../config/config.js"
 
 export const createContact = async (req, res) => {
     try {
         const { name, email, phone, message, reason } = req.body;
 
-        if (!name || !phone) {
+        if (!name || !email || !phone) {
             return res.status(400).json({
                 success: false,
-                message: "Name and phone are required fields",
+                message: "Name, email and phone are required fields",
             });
         }
 
@@ -23,10 +25,37 @@ export const createContact = async (req, res) => {
             email,
             phone,
             message,
-            reason: reason || [], 
+            reason: reason || [],
         });
 
         const savedContact = await newContact.save();
+
+        // Notify admin
+        await sendMail({
+            to: RECEIVER_EMAIL,
+            subject: "New Contact Form Submission",
+            html: `
+                <h3>New Contact Submission</h3>
+                <p><strong>Name:</strong> ${name}</p>
+                <p><strong>Email:</strong> ${email}</p>
+                <p><strong>Phone:</strong> ${phone}</p>
+                <p><strong>Message:</strong> ${message || "No message"}</p>
+                <p><strong>Reason:</strong> ${reason?.join(", ") || "None"}</p>
+            `,
+        });
+
+        // Send confirmation to user 
+        if (email) {
+            await sendMail({
+                to: email,
+                subject: "We received your contact request!",
+                html: `
+                    <p>Hi ${name},</p>
+                    <p>Thank you for reaching out to us. We’ve received your message and will get back to you shortly.</p>
+                    <p>Best regards,<br/>The Support Team</p>
+                `,
+            });
+        }
 
         res.status(201).json({
             success: true,
@@ -34,7 +63,6 @@ export const createContact = async (req, res) => {
             data: savedContact,
         });
     } catch (error) {
-        
         if (error.name === "ValidationError") {
             const errors = Object.values(error.errors).map((err) => err.message);
             return res.status(400).json({
@@ -100,4 +128,4 @@ export const getContactById = async (req, res) => {
             message: "Internal server error"
         });
     }
-};
+}; 
