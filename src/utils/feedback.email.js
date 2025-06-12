@@ -12,7 +12,7 @@ const transporter = nodemailer.createTransport({
 export const sendMail = async ({ to, subject, html }) => {
     try {
         const mailOptions = {
-            from: `"Contact Form" <${EMAIL_USER}>`,
+            from: `"Bharat Digital" <${EMAIL_USER}>`,
             to,
             subject,
             html,
